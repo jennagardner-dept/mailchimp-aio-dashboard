@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mailchimp AIO Intelligence Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{--mc:#FFE01B;--brevo:#0B996E;--ml:#09C269;--kl:#A78BFA;--hs:#FF7A59;--ac:#356AE6;--om:#43E198;--cc:#1B72BE;--aio:#C084FC;--org:#38BDF8;--ads:#FB923C;--dan:#F43F5E;--bg:#0A0F1E;--card:#0F1729;--bdr:rgba(255,255,255,0.08);--txt:#E2E8F0;--mut:#64748B;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--txt);font-family:'DM Sans',sans-serif;min-height:100vh;padding:28px;}
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:28px;}
+.htitle{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.logo{width:38px;height:38px;background:var(--mc);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+h1{font-family:'Playfair Display',serif;font-size:22px;font-weight:800;color:#F8FAFC;letter-spacing:-0.02em;}
+.hsub{font-size:13px;color:var(--mut);}
+.hright{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.badge{font-size:12px;color:var(--mut);background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:6px 12px;}
+.rbtn{font-size:12px;color:var(--aio);background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.3);border-radius:8px;padding:6px 12px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.dbadge{font-size:11px;padding:4px 10px;border-radius:6px;font-weight:600;}
+.dbadge.live{color:#4ADE80;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);}
+.dbadge.cached{color:var(--ads);background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);}
+#loading{display:flex;align-items:center;justify-content:center;height:300px;color:var(--mut);font-size:14px;gap:10px;}
+.spin{width:20px;height:20px;border:2px solid var(--bdr);border-top-color:var(--aio);border-radius:50%;animation:sp 0.8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--bdr);margin-bottom:28px;flex-wrap:wrap;}
+.tab{background:transparent;border:none;color:var(--mut);border-bottom:2px solid transparent;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;border-radius:6px 6px 0 0;font-family:'DM Sans',sans-serif;transition:all 0.15s;margin-bottom:-1px;}
+.tab.active{color:var(--aio);border-bottom-color:var(--aio);background:rgba(192,132,252,0.1);}
+.panel{display:none;}.panel.active{display:block;}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;margin-bottom:24px;}
+.kcard{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden;}
+.kbar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;}
+.klbl{font-size:11px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;}
+.kval{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;line-height:1.1;}
+.ksub{font-size:12px;color:#64748B;margin-top:4px;}
+.ktr{font-size:12px;margin-top:6px;font-weight:600;}
+.ktr.up{color:#4ADE80;}.ktr.dn{color:#F87171;}.ktr.fl{color:var(--mut);}
+.cc{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:22px 20px;margin-bottom:20px;}
+.stitle{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.stitle .bar{width:4px;height:22px;border-radius:2px;}
+.stitle span{font-size:14px;font-weight:700;color:#CBD5E1;letter-spacing:0.04em;text-transform:uppercase;}
+.cdesc{font-size:12px;color:var(--mut);margin-bottom:16px;line-height:1.6;}
+.cw{position:relative;height:300px;}.cw.sm{height:240px;}.cw.lg{height:340px;}.cw.xl{height:420px;}
+.tcol{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.leg{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;}
+.li{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--mut);}
+.ld{width:10px;height:10px;border-radius:2px;}
+.ins{margin-top:12px;padding:10px 14px;background:rgba(192,132,252,0.06);border-radius:8px;border:1px solid rgba(192,132,252,0.15);font-size:12px;color:var(--mut);line-height:1.6;}
+.ins strong{color:#CBD5E1;}
+.hbl{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+.hbr{display:flex;align-items:center;gap:10px;}
+.hblbl{font-size:11px;color:var(--mut);width:56px;text-align:right;}
+.hbt{flex:1;background:rgba(255,255,255,0.05);border-radius:4px;height:16px;overflow:hidden;}
+.hbf{height:100%;border-radius:4px;}
+.hbv{font-size:12px;font-weight:700;width:44px;}
+.stbl{display:flex;flex-direction:column;margin-top:8px;}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr);}
+.srl{font-size:12px;color:var(--mut);}.srd{font-size:11px;color:#475569;}
+.srv{font-size:15px;font-weight:800;font-family:'Playfair Display',serif;}
+.chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:14px;}
+.chip{background:rgba(255,255,255,0.03);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;}
+.chl{font-size:11px;color:var(--mut);}.chv{font-size:15px;font-weight:700;margin-top:2px;}
+.ftr{margin-top:32px;padding-top:16px;border-top:1px solid var(--bdr);display:flex;justify-content:space-between;font-size:11px;color:var(--mut);flex-wrap:wrap;gap:8px;}
+/* ngram table */
+.ng-controls{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+.ng-btn{background:rgba(255,255,255,0.04);border:1px solid var(--bdr);color:var(--mut);border-radius:8px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+.ng-btn.active{background:rgba(192,132,252,0.15);border-color:var(--aio);color:var(--aio);}
+.ng-select{background:var(--card);border:1px solid var(--bdr);color:var(--txt);border-radius:8px;padding:5px 10px;font-size:12px;font-family:'DM Sans',sans-serif;}
+.ng-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.ng-tbl th{text-align:left;padding:8px 10px;color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--bdr);position:sticky;top:0;background:var(--card);cursor:pointer;user-select:none;}
+.ng-tbl th:hover{color:#CBD5E1;}
+.ng-tbl th .sort-arrow{margin-left:4px;opacity:0.4;}
+.ng-tbl th.sorted .sort-arrow{opacity:1;color:var(--aio);}
+.ng-tbl td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.04);color:var(--txt);}
+.ng-tbl tr:hover td{background:rgba(255,255,255,0.02);}
+.ng-tbl td.kw{font-weight:600;color:#CBD5E1;max-width:220px;}
+.ng-tbl td.num{font-variant-numeric:tabular-nums;text-align:right;}
+.ng-tbl td.good{color:#4ADE80;}
+.ng-tbl td.warn{color:#F87171;}
+.ng-tbl td.na{color:var(--mut);font-size:10px;}
+.ng-pill{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;margin-left:4px;}
+.ng-pill.one{background:rgba(56,189,248,0.15);color:#38BDF8;}
+.ng-pill.two{background:rgba(192,132,252,0.15);color:#C084FC;}
+.tbl-wrap{overflow-x:auto;max-height:500px;overflow-y:auto;border-radius:10px;border:1px solid var(--bdr);}
+.ng-search{background:var(--card);border:1px solid var(--bdr);color:var(--txt);border-radius:8px;padding:6px 12px;font-size:12px;font-family:'DM Sans',sans-serif;width:220px;}
+.ng-search::placeholder{color:var(--mut);}
+@media(max-width:640px){body{padding:16px;}.tcol{grid-template-columns:1fr;}h1{font-size:18px;}.ng-tbl td,.ng-tbl th{padding:5px 6px;}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div>
+    <div class="htitle"><div class="logo">🐒</div><h1>Mailchimp AIO Intelligence</h1></div>
+    <div class="hsub" id="hsub">Google AI Overview tracking · Loading...</div>
+  </div>
+  <div class="hright">
+    <span class="dbadge" id="dbadge"></span>
+    <div class="badge" id="lupd">Fetching...</div>
+    <button class="rbtn" onclick="loadData()">Refresh</button>
+  </div>
+</div>
+<div id="loading"><div class="spin"></div> Loading live data from Google Sheets...</div>
+<div id="dash" style="display:none">
+  <div class="tabs">
+    <button class="tab active" onclick="st('overview',this)">Overview</button>
+    <button class="tab" onclick="st('aio',this)">AIO Performance</button>
+    <button class="tab" onclick="st('mailchimp',this)">Mailchimp Rankings</button>
+    <button class="tab" onclick="st('competitors',this)">Competitor AIO Share</button>
+    <button class="tab" onclick="st('ads',this)">Ads vs AIO</button>
+    <button class="tab" onclick="st('ngram',this)">Keyword Performance</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="panel-overview" class="panel active">
+    <div class="kgrid" id="kgrid"></div>
+    <div class="cc"><div class="stitle"><div class="bar" style="background:var(--mc)"></div><span>Mailchimp Channel Citation Rate Over Time</span></div><div class="cw"><canvas id="c1"></canvas></div><div class="leg"><div class="li"><div class="ld" style="background:var(--aio)"></div>AIO Citations</div><div class="li"><div class="ld" style="background:var(--org)"></div>Organic</div><div class="li"><div class="ld" style="background:var(--ads)"></div>Paid Ads</div></div></div>
+    <div class="cc"><div class="stitle"><div class="bar" style="background:var(--ads)"></div><span>Ads Presence Around AIO</span></div><div class="cw sm"><canvas id="c2"></canvas></div><div class="leg"><div class="li"><div class="ld" style="background:var(--ads)"></div>Any Ads Showing</div><div class="li"><div class="ld" style="background:var(--dan)"></div>Ads Above AIO</div></div></div>
+  </div>
+
+  <!-- AIO -->
+  <div id="panel-aio" class="panel">
+    <div class="cc"><div class="stitle"><div class="bar" style="background:var(--aio)"></div><span>AIO Presence Rate Over Time</span></div><p class="cdesc">How frequently Google shows an AI Overview box across all tracked keywords.</p><div class="cw lg"><canvas id="c3"></canvas></div></div>
+    <div class="cc"><div class="stitle"><div class="bar" style="background:var(--ads)"></div><span>Ads Competing with AIO Over Time</span></div><p class="cdesc">Ads appearing above the AI Overview capture user attention first.</p><div class="cw"><canvas id="c4"></canvas></div><div class="leg"><div class="li"><div class="ld" style="background:var(--ads)"></div>Any Ads Showing</div><div class="li"><div class="ld" style="background:var(--dan)"></div>Ads Above AIO</div></div></div>
+  </div>
+
+  <!-- MAILCHIMP -->
+  <div id="panel-mailchimp" class="panel">
+    <div class="cc"><div class="stitle"><div class="bar" style="background:var(--mc)"></div><span>Mailchimp Citation Rate by Channel</span></div><p class="cdesc">% of all tracked keywords where Mailchimp appears in each channel.</p><div class="cw lg"><canvas id="c5"></canvas></div><div class="leg"><div class="li"><div class="ld" style="background:var(--aio)"></div>AIO Citations</div><div class="li"><div class="ld" style="background:var(--org)"></div>Organic</div><div class="li"><div class="ld" style="background:var(--ads)"></div>Paid Ads</div></div></div>
+    <div class="cc"><div class="stitle"><div class="bar" style="background:var(--org)"></div><span>Mailchimp Average Position by Channel</span></div><p class="cdesc">Average ranking position when Mailchimp appears. Lower = better.</p><div class="cw lg"><canvas id="c6"></canvas></div><div class="leg"><div class="li"><div class="ld" style="background:var(--aio)"></div>AIO Avg Rank</div><div class="li"><div class="ld" style="background:var(--org)"></div>Organic Avg Rank</div></div><div class="ins" id="rins"></div></div>
+  </div>
+
+  <!-- COMPETITORS -->
+  <div id="panel-competitors" class="panel">
+    <div class="cc"><div class="stitle"><div class="bar" style="background:var(--brevo)"></div><span>AIO Citation Share — Mailchimp vs Competitors</span></div><p class="cdesc">% of tracked keywords where each brand is cited inside the AI Overview.</p><div class="cw lg"><canvas id="c7"></canvas></div><div class="leg"><div class="li"><div class="ld" style="background:var(--mc)"></div>Mailchimp</div><div class="li"><div class="ld" style="background:var(--brevo)"></div>Brevo</div><div class="li"><div class="ld" style="background:var(--ml)"></div>MailerLite</div><div class="li"><div class="ld" style="background:var(--kl)"></div>Klaviyo</div><div class="li"><div class="ld" style="background:var(--om)"></div>Omnisend</div><div class="li"><div class="ld" style="background:var(--ac)"></div>ActiveCampaign</div><div class="li"><div class="ld" style="background:var(--hs)"></div>HubSpot</div><div class="li"><div class="ld" style="background:var(--cc)"></div>Constant Contact</div></div></div>
+    <div class="cc"><div class="stitle"><div class="bar" style="background:var(--mc)"></div><span>Latest Snapshot</span></div><div class="cw"><canvas id="c8"></canvas></div><div class="chips" id="chips"></div></div>
+  </div>
+
+  <!-- ADS -->
+  <div id="panel-ads" class="panel">
+    <div class="cc"><div class="stitle"><div class="bar" style="background:var(--ads)"></div><span>Ads Appearing Above AIO — % of Keywords</span></div><p class="cdesc">When ads appear above the AI Overview, they capture user attention before the AIO box.</p><div class="cw lg"><canvas id="c9"></canvas></div><div class="leg"><div class="li"><div class="ld" style="background:var(--ads)"></div>Any Ads Showing</div><div class="li"><div class="ld" style="background:var(--dan)"></div>Ads Above AIO</div></div></div>
+    <div class="tcol">
+      <div class="cc" style="margin-bottom:0"><div class="stitle"><div class="bar" style="background:var(--dan)"></div><span>Ads Above AIO Trend</span></div><div class="hbl" id="hbl"></div></div>
+      <div class="cc" style="margin-bottom:0"><div class="stitle"><div class="bar" style="background:var(--ads)"></div><span>SERP Landscape Summary</span></div><div class="stbl" id="serp"></div></div>
+    </div>
+  </div>
+
+  <!-- KEYWORD PERFORMANCE -->
+  <div id="panel-ngram" class="panel">
+
+    <!-- KPI summary row -->
+    <div class="kgrid" id="kw-kpis" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:20px;"></div>
+
+    <!-- Top charts row -->
+    <div class="tcol" style="margin-bottom:20px;">
+      <div class="cc" style="margin-bottom:0">
+        <div class="stitle"><div class="bar" style="background:var(--mc)"></div><span>Top 20 Keywords — Mailchimp AIO Citation</span></div>
+        <p class="cdesc">Keywords where Mailchimp is most frequently cited in AI Overviews.</p>
+        <div class="cw xl"><canvas id="ck1"></canvas></div>
+      </div>
+      <div class="cc" style="margin-bottom:0">
+        <div class="stitle"><div class="bar" style="background:var(--dan)"></div><span>Top 20 Missed Opportunities</span></div>
+        <p class="cdesc">Keywords with high AIO presence but Mailchimp not cited — biggest visibility gaps.</p>
+        <div class="cw xl"><canvas id="ck2"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Competitor gap chart -->
+    <div class="cc">
+      <div class="stitle"><div class="bar" style="background:var(--brevo)"></div><span>Top 20 Keywords — Competitors Outranking Mailchimp in AIO</span></div>
+      <p class="cdesc">Keywords where the top competitor's AIO citation rate exceeds Mailchimp's by the largest margin.</p>
+      <div class="cw lg"><canvas id="ck3"></canvas></div>
+    </div>
+
+    <!-- Scatter plot -->
+    <div class="cc">
+      <div class="stitle"><div class="bar" style="background:var(--aio)"></div><span>Keyword Cluster Map — MC AIO % vs MC Organic %</span></div>
+      <p class="cdesc">Each dot is a keyword. Horizontal = Mailchimp AIO citation rate. Vertical = Mailchimp organic citation rate. Dot size = AIO presence rate (how often Google shows an AI Overview for that keyword — bigger = higher stakes).</p>
+      <div class="cw" style="height:480px;position:relative">
+        <canvas id="ck-scatter"></canvas>
+        <!-- Quadrant labels -->
+        <div style="position:absolute;top:8px;left:55%;font-size:10px;color:rgba(56,189,248,0.5);font-weight:600;pointer-events:none">HIGH AIO + HIGH ORGANIC →</div>
+        <div style="position:absolute;top:8px;left:8%;font-size:10px;color:rgba(192,132,252,0.5);font-weight:600;pointer-events:none">← LOW AIO + HIGH ORGANIC</div>
+        <div style="position:absolute;bottom:32px;left:55%;font-size:10px;color:rgba(251,146,60,0.5);font-weight:600;pointer-events:none">AIO ONLY →</div>
+        <div style="position:absolute;bottom:32px;left:8%;font-size:10px;color:rgba(100,116,139,0.5);font-weight:600;pointer-events:none">← LOW VISIBILITY</div>
+      </div>
+      <div class="leg" style="margin-top:14px;">
+        <div class="li"><div class="ld" style="background:var(--mc);border-radius:50%"></div>High MC AIO presence</div>
+        <div class="li"><div class="ld" style="background:var(--org);border-radius:50%"></div>High MC organic presence</div>
+        <div class="li" style="font-size:11px;color:var(--mut)">Dot size = AIO presence rate (bigger = Google shows AIO more often)</div>
+      </div>
+    </div>
+
+    <!-- Full keyword table -->
+    <div class="cc">
+      <div class="stitle"><div class="bar" style="background:var(--org)"></div><span>All Keywords</span></div>
+      <p class="cdesc">Full keyword performance table averaged across all scan dates. Click any column header to sort.</p>
+      <div class="ng-controls">
+        <input class="ng-search" id="ng-search" placeholder="Search keywords..." oninput="ngRender()">
+        <span style="font-size:11px;color:var(--mut);margin-left:auto" id="ng-count"></span>
+      </div>
+      <div class="tbl-wrap">
+        <table class="ng-tbl" id="ng-tbl">
+          <thead>
+            <tr>
+              <th onclick="ngSort('keyword')" id="th-keyword">Keyword <span class="sort-arrow">↕</span></th>
+              <th onclick="ngSort('aio_showing')" id="th-aio_showing">AIO % <span class="sort-arrow">↕</span></th>
+              <th onclick="ngSort('mc_aio_rate')" id="th-mc_aio_rate" class="sorted">MC AIO % <span class="sort-arrow">↓</span></th>
+              <th onclick="ngSort('mc_aio_rank')" id="th-mc_aio_rank">MC AIO Rank <span class="sort-arrow">↕</span></th>
+              <th onclick="ngSort('mc_organic_rate')" id="th-mc_organic_rate">MC Organic % <span class="sort-arrow">↕</span></th>
+              <th onclick="ngSort('mc_organic_rank')" id="th-mc_organic_rank">MC Org Rank <span class="sort-arrow">↕</span></th>
+              <th onclick="ngSort('mc_ads_rate')" id="th-mc_ads_rate">MC Ads % <span class="sort-arrow">↕</span></th>
+              <th onclick="ngSort('brevo_aio_rate')" id="th-brevo_aio_rate">Brevo % <span class="sort-arrow">↕</span></th>
+              <th onclick="ngSort('klaviyo_aio_rate')" id="th-klaviyo_aio_rate">Klaviyo % <span class="sort-arrow">↕</span></th>
+              <th onclick="ngSort('mailerlite_aio_rate')" id="th-mailerlite_aio_rate">MailerLite % <span class="sort-arrow">↕</span></th>
+              <th onclick="ngSort('omnisend_aio_rate')" id="th-omnisend_aio_rate">Omnisend % <span class="sort-arrow">↕</span></th>
+              <th onclick="ngSort('ads_above_aio')" id="th-ads_above_aio">Ads Above AIO % <span class="sort-arrow">↕</span></th>
+              <th onclick="ngSort('top_organic_1')" id="th-top_organic_1">Top Organic #1 <span class="sort-arrow">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="ng-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="ftr"><span id="fl">Data: Mailchimp AIO Tool · Live from Google Sheets</span><span id="fr">Only active scan dates shown</span></div>
+
+<script>
+const SID='1aLqZah8Frx8uVhvu3q55cCFfxUz6ZV7H8jlcKRlDFp0';
+const GID_SUMMARY='1479179188';
+const GID_NGRAM='1189851907';
+
+// Fallback summary data
+const FB=[{"run_date":"2026-02-24","total":2182,"aio_presence_rate":55.5,"any_ads_rate":41.02,"ads_above_aio_rate":16.45,"mailchimp_aio_rate":24.66,"mailchimp_organic_rate":20.62,"mailchimp_ad_rate":16.87,"mailchimp_avg_aio_rank":3.3,"mailchimp_avg_organic_rank":2.14,"brevo_aio_rate":17.97,"klaviyo_aio_rate":12.56,"hubspot_aio_rate":8.11,"mailerlite_aio_rate":14.99,"activecampaign_aio_rate":7.06,"constantcontact_aio_rate":5.59,"omnisend_aio_rate":12.1},{"run_date":"2026-02-25","total":1627,"aio_presence_rate":37.06,"any_ads_rate":28.7,"ads_above_aio_rate":11.74,"mailchimp_aio_rate":17.76,"mailchimp_organic_rate":14.07,"mailchimp_ad_rate":15.3,"mailchimp_avg_aio_rank":3.33,"mailchimp_avg_organic_rank":2.18,"brevo_aio_rate":13.03,"klaviyo_aio_rate":8.54,"hubspot_aio_rate":4.79,"mailerlite_aio_rate":10.33,"activecampaign_aio_rate":5.29,"constantcontact_aio_rate":3.87,"omnisend_aio_rate":7.13},{"run_date":"2026-03-06","total":1641,"aio_presence_rate":41.32,"any_ads_rate":33.27,"ads_above_aio_rate":18.04,"mailchimp_aio_rate":20.6,"mailchimp_organic_rate":10.73,"mailchimp_ad_rate":9.14,"mailchimp_avg_aio_rank":3.33,"mailchimp_avg_organic_rank":2.13,"brevo_aio_rate":15.17,"klaviyo_aio_rate":11.27,"hubspot_aio_rate":6.58,"mailerlite_aio_rate":10.42,"activecampaign_aio_rate":4.94,"constantcontact_aio_rate":3.47,"omnisend_aio_rate":6.22},{"run_date":"2026-03-07","total":1093,"aio_presence_rate":60.66,"any_ads_rate":39.34,"ads_above_aio_rate":17.84,"mailchimp_aio_rate":31.11,"mailchimp_organic_rate":16.19,"mailchimp_ad_rate":11.07,"mailchimp_avg_aio_rank":3.2,"mailchimp_avg_organic_rank":2.16,"brevo_aio_rate":22.96,"klaviyo_aio_rate":16.93,"hubspot_aio_rate":8.87,"mailerlite_aio_rate":15.74,"activecampaign_aio_rate":7.96,"constantcontact_aio_rate":6.95,"omnisend_aio_rate":7.87},{"run_date":"2026-03-17","total":547,"aio_presence_rate":60.88,"any_ads_rate":46.07,"ads_above_aio_rate":19.38,"mailchimp_aio_rate":26.51,"mailchimp_organic_rate":17.92,"mailchimp_ad_rate":10.05,"mailchimp_avg_aio_rank":3.27,"mailchimp_avg_organic_rank":1.98,"brevo_aio_rate":19.93,"klaviyo_aio_rate":17.0,"hubspot_aio_rate":10.79,"mailerlite_aio_rate":16.45,"activecampaign_aio_rate":8.23,"constantcontact_aio_rate":5.48,"omnisend_aio_rate":9.69},{"run_date":"2026-03-18","total":523,"aio_presence_rate":58.89,"any_ads_rate":40.73,"ads_above_aio_rate":13.0,"mailchimp_aio_rate":20.84,"mailchimp_organic_rate":16.44,"mailchimp_ad_rate":7.84,"mailchimp_avg_aio_rank":3.17,"mailchimp_avg_organic_rank":2.01,"brevo_aio_rate":19.69,"klaviyo_aio_rate":13.58,"hubspot_aio_rate":8.41,"mailerlite_aio_rate":15.87,"activecampaign_aio_rate":6.5,"constantcontact_aio_rate":5.16,"omnisend_aio_rate":9.18},{"run_date":"2026-03-25","total":546,"aio_presence_rate":57.33,"any_ads_rate":28.21,"ads_above_aio_rate":4.95,"mailchimp_aio_rate":22.89,"mailchimp_organic_rate":17.58,"mailchimp_ad_rate":7.88,"mailchimp_avg_aio_rank":3.62,"mailchimp_avg_organic_rank":2.05,"brevo_aio_rate":19.96,"klaviyo_aio_rate":14.47,"hubspot_aio_rate":9.52,"mailerlite_aio_rate":16.67,"activecampaign_aio_rate":8.24,"constantcontact_aio_rate":3.66,"omnisend_aio_rate":8.79},{"run_date":"2026-04-01","total":519,"aio_presence_rate":54.53,"any_ads_rate":29.48,"ads_above_aio_rate":8.09,"mailchimp_aio_rate":22.54,"mailchimp_organic_rate":20.42,"mailchimp_ad_rate":5.39,"mailchimp_avg_aio_rank":3.38,"mailchimp_avg_organic_rank":2.19,"brevo_aio_rate":16.57,"klaviyo_aio_rate":11.37,"hubspot_aio_rate":6.74,"mailerlite_aio_rate":14.07,"activecampaign_aio_rate":9.44,"constantcontact_aio_rate":3.66,"omnisend_aio_rate":5.78},{"run_date":"2026-04-08","total":499,"aio_presence_rate":54.71,"any_ads_rate":38.28,"ads_above_aio_rate":14.43,"mailchimp_aio_rate":24.05,"mailchimp_organic_rate":17.84,"mailchimp_ad_rate":8.22,"mailchimp_avg_aio_rank":2.68,"mailchimp_avg_organic_rank":2.13,"brevo_aio_rate":16.43,"klaviyo_aio_rate":13.43,"hubspot_aio_rate":7.41,"mailerlite_aio_rate":14.23,"activecampaign_aio_rate":6.81,"constantcontact_aio_rate":5.01,"omnisend_aio_rate":9.82},{"run_date":"2026-04-15","total":547,"aio_presence_rate":55.76,"any_ads_rate":20.29,"ads_above_aio_rate":4.2,"mailchimp_aio_rate":23.03,"mailchimp_organic_rate":20.29,"mailchimp_ad_rate":3.47,"mailchimp_avg_aio_rank":2.53,"mailchimp_avg_organic_rank":2.21,"brevo_aio_rate":18.65,"klaviyo_aio_rate":12.98,"hubspot_aio_rate":6.95,"mailerlite_aio_rate":15.17,"activecampaign_aio_rate":8.04,"constantcontact_aio_rate":2.93,"omnisend_aio_rate":9.87},{"run_date":"2026-04-22","total":547,"aio_presence_rate":56.86,"any_ads_rate":30.35,"ads_above_aio_rate":5.67,"mailchimp_aio_rate":25.59,"mailchimp_organic_rate":21.02,"mailchimp_ad_rate":4.39,"mailchimp_avg_aio_rank":2.68,"mailchimp_avg_organic_rank":2.15,"brevo_aio_rate":18.28,"klaviyo_aio_rate":16.82,"hubspot_aio_rate":8.41,"mailerlite_aio_rate":15.9,"activecampaign_aio_rate":7.68,"constantcontact_aio_rate":3.84,"omnisend_aio_rate":13.16}];
+
+const C={mc:'#FFE01B',brevo:'#0B996E',ml:'#09C269',kl:'#A78BFA',hs:'#FF7A59',ac:'#356AE6',om:'#43E198',cc:'#1B72BE',aio:'#C084FC',org:'#38BDF8',ads:'#FB923C',dan:'#F43F5E',mut:'#64748B',bg:'#0A0F1E'};
+Chart.defaults.color='#64748B';Chart.defaults.borderColor='rgba(255,255,255,0.06)';Chart.defaults.font.family="'DM Sans',sans-serif";
+const CH={};
+function dc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
+function bo(yMax){return{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{backgroundColor:'#0F1729',borderColor:'rgba(255,255,255,0.15)',borderWidth:1,titleColor:'#94A3B8',bodyColor:'#E2E8F0',padding:10,callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toFixed(1)+'%'}}},scales:{x:{grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#64748B',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#64748B',font:{size:11},callback:v=>v+'%'},min:0,...(yMax?{max:yMax}:{})}}}}
+function ld(label,data,color,dash){return{label,data,borderColor:color,backgroundColor:color+'18',borderWidth:2.5,pointRadius:5,pointBackgroundColor:color,pointBorderColor:C.bg,pointBorderWidth:2,tension:0.3,fill:false,...(dash?{borderDash:dash}:{})}}
+function ad(label,data,color){return{label,data,borderColor:color,backgroundColor:color+'18',borderWidth:2.5,pointRadius:5,pointBackgroundColor:color,pointBorderColor:C.bg,pointBorderWidth:2,tension:0.3,fill:true}}
+function fmt(d){if(!d)return'';try{const s=d instanceof Date?d.toISOString().slice(0,10):(typeof d==='string'&&d.match(/^Date\((\d+),(\d+),(\d+)\)$/))?((m=>m[1]+'-'+String(parseInt(m[2])+1).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0'))(d.match(/^Date\((\d+),(\d+),(\d+)\)$/))):(typeof d==='string'?d:String(d));const dt=new Date(s+'T00:00:00Z');if(isNaN(dt))return String(d);return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});}catch(e){return String(d);}}
+function fmtDate(d){if(!d)return'';try{const s=d instanceof Date?d.toISOString().slice(0,10):(typeof d==='string'&&d.match(/^Date\((\d+),(\d+),(\d+)\)$/))?((m=>m[1]+'-'+String(parseInt(m[2])+1).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0'))(d.match(/^Date\((\d+),(\d+),(\d+)\)$/))):(typeof d==='string'?d:String(d));return s;}catch(e){return String(d);}}
+function g(r,k){return parseFloat(r[k])||0;}
+
+// ── GVIZ FETCH ───────────────────────────────────────────────
+async function fetchGviz(gid){
+  const url='https://docs.google.com/spreadsheets/d/'+SID+'/gviz/tq?tqx=out:json&gid='+gid;
+  const res=await fetch(url);
+  if(!res.ok)throw new Error('fetch failed');
+  const txt=await res.text();
+  const json=JSON.parse(txt.replace(/^[^\(]+\(/,'').replace(/\);?\s*$/,''));
+  const cols=json.table.cols.map(c=>c.label);
+  return json.table.rows.filter(r=>r&&r.c&&r.c[0]&&r.c[0].v).map(row=>{
+    const o={};
+    cols.forEach((col,i)=>{
+      const cell=row.c[i];
+      if(!cell||cell.v==null){o[col]='';return;}
+      let v=cell.v;
+      if(typeof v==='string'&&v.match(/^Date\((\d+),(\d+),(\d+)\)$/)){
+        const m=v.match(/^Date\((\d+),(\d+),(\d+)\)$/);
+        v=m[1]+'-'+String(parseInt(m[2])+1).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');
+      }
+      o[col]=v;
+    });
+    return o;
+  });
+}
+
+// ── NGRAM STATE ──────────────────────────────────────────────
+let ngData=[], ngFilter_='all', ngSortKey='mc_aio_rate', ngSortDir=-1;
+
+function buildNgram(ngramRows){
+  return ngramRows.filter(r=>r.keyword).map(r=>({
+    keyword:String(r.keyword),
+    n:parseInt(r.ngram)||1,
+    aio_showing:parseFloat(r.aio_showing_rate)||0,
+    mc_aio_rate:parseFloat(r.mc_aio_rate)||0,
+    mc_aio_rank:parseFloat(r.mc_aio_avg_rank)||null,
+    mc_organic_rate:parseFloat(r.mc_organic_rate)||0,
+    mc_organic_rank:parseFloat(r.mc_organic_avg_rank)||null,
+    mc_ads_rate:parseFloat(r.mc_ads_rate)||0,
+    brevo_aio_rate:parseFloat(r.brevo_aio_rate)||0,
+    klaviyo_aio_rate:parseFloat(r.klaviyo_aio_rate)||0,
+    mailerlite_aio_rate:parseFloat(r.mailerlite_aio_rate)||0,
+    omnisend_aio_rate:parseFloat(r.omnisend_aio_rate)||0,
+    ads_above_aio:parseFloat(r.ads_above_aio_rate)||0,
+    top_organic_1:String(r.top_organic_1||''),
+    scans:parseInt(r.scans)||0,
+  }));
+}
+
+function ngSort(key){
+  if(ngSortKey===key){ngSortDir*=-1;}else{ngSortKey=key;ngSortDir=-1;}
+  document.querySelectorAll('.ng-tbl th').forEach(th=>{
+    th.classList.remove('sorted');
+    th.querySelector('.sort-arrow').textContent='↕';
+  });
+  const th=document.getElementById('th-'+key);
+  if(th){th.classList.add('sorted');th.querySelector('.sort-arrow').textContent=ngSortDir===-1?'↓':'↑';}
+  ngRender();
+}
+
+function ngRender(){
+  if(!ngData.length)return;
+  const search=(document.getElementById('ng-search').value||'').toLowerCase();
+  let rows=ngData.filter(r=>{
+    if(search&&!r.keyword.includes(search))return false;
+    return true;
+  });
+  rows.sort((a,b)=>{
+    const av=a[ngSortKey],bv=b[ngSortKey];
+    if(av===null&&bv===null)return 0;
+    if(av===null)return 1;
+    if(bv===null)return -1;
+    if(typeof av==='string')return av.localeCompare(bv)*ngSortDir;
+    return(av-bv)*ngSortDir;
+  });
+  document.getElementById('ng-count').textContent=rows.length+' keywords';
+  const pct=v=>v==null?'<td class="num na">—</td>':'<td class="num '+(v>=50?'good':v>0?'':'na')+'">'+v.toFixed(1)+'%</td>';
+  const rank=v=>v==null?'<td class="num na">—</td>':'<td class="num">#'+v.toFixed(2)+'</td>';
+  document.getElementById('ng-tbody').innerHTML=rows.map(r=>`
+    <tr>
+      <td class="kw">${r.keyword}</td>
+      ${pct(r.aio_showing)}
+      ${pct(r.mc_aio_rate)}
+      ${rank(r.mc_aio_rank)}
+      ${pct(r.mc_organic_rate)}
+      ${rank(r.mc_organic_rank)}
+      ${pct(r.mc_ads_rate)}
+      ${pct(r.brevo_aio_rate)}
+      ${pct(r.klaviyo_aio_rate)}
+      ${pct(r.mailerlite_aio_rate)}
+      ${pct(r.omnisend_aio_rate)}
+      ${pct(r.ads_above_aio)}
+      <td class="kw" style="font-size:11px;color:var(--mut)">${r.top_organic_1||'—'}</td>
+    </tr>`).join('');
+
+  // ── KPI summary ──────────────────────────────────────────
+  const all=ngData;
+  const cited=all.filter(r=>r.mc_aio_rate>0).length;
+  const missed=all.filter(r=>r.aio_showing>50&&r.mc_aio_rate===0).length;
+  const topComp=r=>Math.max(r.brevo_aio_rate,r.klaviyo_aio_rate,r.mailerlite_aio_rate,r.omnisend_aio_rate);
+  const losing=all.filter(r=>topComp(r)>r.mc_aio_rate).length;
+  const avgMcAio=parseFloat((all.reduce((s,r)=>s+r.mc_aio_rate,0)/all.length).toFixed(1));
+  document.getElementById('kw-kpis').innerHTML=[
+    {l:'Keywords Tracked',v:all.length,c:C.aio,s:'total tracked keywords',unit:''},
+    {l:'MC AIO Avg Rate',v:avgMcAio,c:C.mc,s:'avg citation rate across keywords',unit:'%'},
+    {l:'Keywords MC Cited',v:cited,c:'#4ADE80',s:'keywords where MC appears in AIO',unit:''},
+    {l:'Missed Opportunities',v:missed,c:C.dan,s:'high AIO presence, MC not cited',unit:''},
+    {l:'Losing to Competitor',v:losing,c:C.ads,s:'keywords where a competitor leads MC',unit:''},
+  ].map(k=>`<div class="kcard"><div class="kbar" style="background:${k.c}"></div><div class="klbl">${k.l}</div><div class="kval" style="color:${k.c}">${k.v}${k.unit}</div><div class="ksub">${k.s}</div></div>`).join('');
+
+  // ── Chart 1: Top 20 MC AIO keywords ──────────────────────
+  const top20mc=[...ngData].sort((a,b)=>b.mc_aio_rate-a.mc_aio_rate).slice(0,20);
+  const hbo=(max)=>({
+    responsive:true,maintainAspectRatio:false,
+    indexAxis:'y',
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#0F1729',borderColor:'rgba(255,255,255,0.15)',borderWidth:1,titleColor:'#94A3B8',bodyColor:'#E2E8F0',padding:10,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.x.toFixed(1)}%`}}},
+    scales:{
+      x:{grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#64748B',font:{size:10},callback:v=>v+'%'},min:0,...(max?{max}:{})},
+      y:{grid:{display:false},ticks:{color:'#CBD5E1',font:{size:10}}}
+    }
+  });
+  dc('ck1');CH.ck1=new Chart(document.getElementById('ck1'),{
+    type:'bar',
+    data:{
+      labels:top20mc.map(r=>r.keyword),
+      datasets:[
+        {label:'MC AIO %',data:top20mc.map(r=>r.mc_aio_rate),backgroundColor:C.mc+'CC',borderRadius:4},
+        {label:'MC Organic %',data:top20mc.map(r=>r.mc_organic_rate),backgroundColor:C.org+'88',borderRadius:4},
+      ]
+    },
+    options:{...hbo(100),plugins:{...hbo(100).plugins,legend:{display:true,labels:{color:'#94A3B8',font:{size:11}}}}}
+  });
+
+  // ── Chart 2: Top 20 missed opportunities ─────────────────
+  const missed20=[...ngData]
+    .filter(r=>r.aio_showing>0)
+    .sort((a,b)=>(b.aio_showing-b.mc_aio_rate)-(a.aio_showing-a.mc_aio_rate))
+    .slice(0,20);
+  dc('ck2');CH.ck2=new Chart(document.getElementById('ck2'),{
+    type:'bar',
+    data:{
+      labels:missed20.map(r=>r.keyword),
+      datasets:[
+        {label:'AIO Presence %',data:missed20.map(r=>r.aio_showing),backgroundColor:C.aio+'55',borderRadius:4},
+        {label:'MC AIO %',data:missed20.map(r=>r.mc_aio_rate),backgroundColor:C.dan+'CC',borderRadius:4},
+      ]
+    },
+    options:{...hbo(100),plugins:{...hbo(100).plugins,legend:{display:true,labels:{color:'#94A3B8',font:{size:11}}}}}
+  });
+
+  // ── Chart 3: Top 20 competitor gap keywords ───────────────
+  const withGap=ngData.map(r=>{
+    const best=Math.max(r.brevo_aio_rate,r.klaviyo_aio_rate,r.mailerlite_aio_rate,r.omnisend_aio_rate);
+    const bestName=['Brevo','Klaviyo','MailerLite','Omnisend'][[r.brevo_aio_rate,r.klaviyo_aio_rate,r.mailerlite_aio_rate,r.omnisend_aio_rate].indexOf(best)];
+    return{...r,best,bestName,gap:parseFloat((best-r.mc_aio_rate).toFixed(1))};
+  }).filter(r=>r.gap>0).sort((a,b)=>b.gap-a.gap).slice(0,20);
+
+  const gapOpts=hbo(100);
+  gapOpts.plugins.tooltip.callbacks.label=ctx=>{
+    const r=withGap[ctx.dataIndex];
+    if(ctx.datasetIndex===0)return` MC AIO: ${r.mc_aio_rate.toFixed(1)}%`;
+    return` ${r.bestName}: ${r.best.toFixed(1)}% (gap: +${r.gap.toFixed(1)}pp)`;
+  };
+  dc('ck3');CH.ck3=new Chart(document.getElementById('ck3'),{
+    type:'bar',
+    data:{
+      labels:withGap.map(r=>r.keyword),
+      datasets:[
+        {label:'Mailchimp AIO %',data:withGap.map(r=>r.mc_aio_rate),backgroundColor:C.mc+'CC',borderRadius:4},
+        {label:'Top Competitor %',data:withGap.map(r=>r.best),backgroundColor:C.dan+'CC',borderRadius:4},
+      ]
+    },
+    options:{...gapOpts,plugins:{...gapOpts.plugins,legend:{display:true,labels:{color:'#94A3B8',font:{size:11}}}}}
+  });
+
+  // ── Scatter plot ─────────────────────────────────────────
+  const maxAio=Math.max(...ngData.map(r=>r.aio_showing||1));
+  const scatterDots=ngData.map(r=>({
+    x:r.mc_aio_rate,
+    y:r.mc_organic_rate,
+    r:Math.max(4,Math.round((r.aio_showing/maxAio)*18)),
+    keyword:r.keyword,
+    aio:r.mc_aio_rate,
+    org:r.mc_organic_rate,
+    aio_showing:r.aio_showing,
+  }));
+  const dotColors=scatterDots.map(d=>{
+    if(d.x>=10&&d.y>=10) return C.org+'CC';
+    if(d.x<10&&d.y>=10)  return C.aio+'CC';
+    if(d.x>=10&&d.y<10)  return C.ads+'CC';
+    return C.muted+'88';
+  });
+  const midX=parseFloat((ngData.reduce((s,r)=>s+r.mc_aio_rate,0)/ngData.length).toFixed(1));
+  const midY=parseFloat((ngData.reduce((s,r)=>s+r.mc_organic_rate,0)/ngData.length).toFixed(1));
+  dc('ck-scatter');CH['ck-scatter']=new Chart(document.getElementById('ck-scatter'),{
+    type:'bubble',
+    data:{datasets:[{
+      label:'Keywords',
+      data:scatterDots,
+      backgroundColor:dotColors,
+      borderColor:dotColors.map(c=>c.replace('CC','FF')),
+      borderWidth:0.5,
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#0F1729',borderColor:'rgba(255,255,255,0.15)',borderWidth:1,
+          titleColor:'#FFE01B',bodyColor:'#E2E8F0',padding:10,
+          callbacks:{
+            title:ctx=>ctx[0].raw.keyword,
+            label:ctx=>[
+              'MC AIO: '+ctx.raw.aio.toFixed(1)+'%',
+              'MC Organic: '+ctx.raw.org.toFixed(1)+'%',
+              'AIO Presence: '+ctx.raw.aio_showing.toFixed(1)+'%',
+            ]
+          }
+        }
+      },
+      scales:{
+        x:{
+          title:{display:true,text:'Mailchimp AIO Citation Rate (%)',color:'#64748B',font:{size:11}},
+          grid:{color:'rgba(255,255,255,0.06)'},
+          ticks:{color:'#64748B',font:{size:10},callback:v=>v+'%'},
+          min:0,
+        },
+        y:{
+          title:{display:true,text:'Mailchimp Organic Citation Rate (%)',color:'#64748B',font:{size:11}},
+          grid:{color:'rgba(255,255,255,0.06)'},
+          ticks:{color:'#64748B',font:{size:10},callback:v=>v+'%'},
+          min:0,
+        }
+      }
+    }
+  });
+}
+async function loadData(){
+  document.getElementById('loading').style.display='flex';
+  document.getElementById('dash').style.display='none';
+  let rows=null,live=false,rawRows=[];
+
+  try{
+    const [sumData,ngramData]=await Promise.all([fetchGviz(GID_SUMMARY),fetchGviz(GID_NGRAM)]);
+    const act=sumData.filter(r=>parseFloat(r.aio_presence_rate)>0);
+    if(act.length>0){rows=act;live=true;}
+    rawRows=ngramData;
+  }catch(e){console.warn('live fetch failed:',e);}
+
+  if(!rows)rows=FB;
+  ngData=buildNgram(rawRows.length?rawRows:[]);
+
+  build(rows,live);
+  if(ngData.length)ngRender();
+
+  document.getElementById('loading').style.display='none';
+  document.getElementById('dash').style.display='block';
+  const lat=rows[rows.length-1];
+  const b=document.getElementById('dbadge');
+  b.textContent=live?'Live':'Cached data';b.className='dbadge '+(live?'live':'cached');
+  document.getElementById('lupd').textContent='Last run: '+fmt(lat.run_date);
+  document.getElementById('hsub').textContent='Google AI Overview tracking · '+fmt(rows[0].run_date)+' – '+fmt(lat.run_date)+' · '+rows.length+' active scan dates';
+  document.getElementById('fl').textContent='Data: Mailchimp AIO Tool · '+(live?'Live from Google Sheets':'Cached — upload to GitHub Pages for live data')+' · '+rows.reduce((s,r)=>s+r.total,0).toLocaleString()+' keyword scans';
+  document.getElementById('fr').textContent=rows.length+' active dates shown'+(ngData.length?' · '+ngData.length+' keywords (1+2-gram)':'');
+}
+
+function build(rows,live){
+  const dates=rows.map(r=>fmt(r.run_date)),lat=rows[rows.length-1],prev=rows[rows.length-2]||{};
+  const kpis=[
+    {l:'AIO Presence Rate',v:g(lat,'aio_presence_rate'),c:C.aio,s:'of keywords show AIO',k:'aio_presence_rate'},
+    {l:'Mailchimp AIO Citation',v:g(lat,'mailchimp_aio_rate'),c:C.mc,s:'keywords cited in AIO',k:'mailchimp_aio_rate'},
+    {l:'Mailchimp Organic',v:g(lat,'mailchimp_organic_rate'),c:C.org,s:'keywords in top organic',k:'mailchimp_organic_rate'},
+    {l:'Mailchimp Ads',v:g(lat,'mailchimp_ad_rate'),c:C.ads,s:'keywords with MC ads',k:'mailchimp_ad_rate'},
+    {l:'Avg AIO Rank',v:g(lat,'mailchimp_avg_aio_rank'),c:C.aio,s:'MC AIO citation position',k:'mailchimp_avg_aio_rank',r:true},
+  ];
+  document.getElementById('kgrid').innerHTML=kpis.map(k=>{
+    const t=parseFloat((k.v-g(prev,k.k)).toFixed(1));
+    const td=k.r?(t<0?'up':t>0?'dn':'fl'):(t>0?'up':t<0?'dn':'fl');
+    const tl=t!=0?(t>0?'▲':'▼')+' '+Math.abs(t).toFixed(1)+(k.r?'':' pp')+' vs prev':'';
+    return '<div class="kcard"><div class="kbar" style="background:'+k.c+'"></div><div class="klbl">'+k.l+'</div><div class="kval" style="color:'+k.c+'">'+(k.r?'#'+k.v.toFixed(1):k.v.toFixed(1)+'%')+'</div><div class="ksub">'+k.s+'</div>'+(tl?'<div class="ktr '+td+'">'+tl+'</div>':'')+'</div>';
+  }).join('');
+  dc('c1');CH.c1=new Chart(document.getElementById('c1'),{type:'line',data:{labels:dates,datasets:[ad('AIO Citations',rows.map(r=>g(r,'mailchimp_aio_rate')),C.aio),ld('Organic',rows.map(r=>g(r,'mailchimp_organic_rate')),C.org),ld('Paid Ads',rows.map(r=>g(r,'mailchimp_ad_rate')),C.ads,[6,3])]},options:bo(40)});
+  dc('c2');CH.c2=new Chart(document.getElementById('c2'),{type:'bar',data:{labels:dates,datasets:[{label:'Any Ads Showing',data:rows.map(r=>g(r,'any_ads_rate')),backgroundColor:C.ads+'99',borderRadius:4},{label:'Ads Above AIO',data:rows.map(r=>g(r,'ads_above_aio_rate')),backgroundColor:C.dan+'CC',borderRadius:4}]},options:bo(55)});
+  dc('c3');CH.c3=new Chart(document.getElementById('c3'),{type:'line',data:{labels:dates,datasets:[ad('AIO Presence Rate',rows.map(r=>g(r,'aio_presence_rate')),C.aio)]},options:bo(80)});
+  dc('c4');CH.c4=new Chart(document.getElementById('c4'),{type:'line',data:{labels:dates,datasets:[ad('Any Ads Showing',rows.map(r=>g(r,'any_ads_rate')),C.ads),ld('Ads Above AIO',rows.map(r=>g(r,'ads_above_aio_rate')),C.dan)]},options:bo(55)});
+  dc('c5');CH.c5=new Chart(document.getElementById('c5'),{type:'line',data:{labels:dates,datasets:[ld('AIO Citations',rows.map(r=>g(r,'mailchimp_aio_rate')),C.aio),ld('Organic',rows.map(r=>g(r,'mailchimp_organic_rate')),C.org),ld('Paid Ads',rows.map(r=>g(r,'mailchimp_ad_rate')),C.ads,[6,3])]},options:bo(40)});
+  const ro=JSON.parse(JSON.stringify(bo(5)));ro.plugins.tooltip.callbacks.label=ctx=>' '+ctx.dataset.label+': #'+ctx.parsed.y.toFixed(2);ro.scales.y.ticks.callback=v=>'#'+v;ro.scales.y.min=1;ro.scales.y.max=5;
+  dc('c6');CH.c6=new Chart(document.getElementById('c6'),{type:'line',data:{labels:dates,datasets:[ld('AIO Avg Rank',rows.map(r=>g(r,'mailchimp_avg_aio_rank')),C.aio),ld('Organic Avg Rank',rows.map(r=>g(r,'mailchimp_avg_organic_rank')),C.org)]},options:ro});
+  const fr=g(rows[0],'mailchimp_avg_aio_rank'),lr=g(lat,'mailchimp_avg_aio_rank');
+  document.getElementById('rins').innerHTML='<strong>Trend:</strong> Mailchimp\'s AIO rank '+(lr<fr?'improved':'declined')+' from #'+fr.toFixed(1)+' to #'+lr.toFixed(1)+' over the tracking period. Organic rank stable around #'+g(lat,'mailchimp_avg_organic_rank').toFixed(1)+'.';
+  dc('c7');CH.c7=new Chart(document.getElementById('c7'),{type:'line',data:{labels:dates,datasets:[
+    {...ld('Mailchimp',rows.map(r=>g(r,'mailchimp_aio_rate')),C.mc),borderWidth:3,pointRadius:6},
+    ld('Brevo',rows.map(r=>g(r,'brevo_aio_rate')),C.brevo),
+    ld('MailerLite',rows.map(r=>g(r,'mailerlite_aio_rate')),C.ml),
+    ld('Klaviyo',rows.map(r=>g(r,'klaviyo_aio_rate')),C.kl),
+    ld('Omnisend',rows.map(r=>g(r,'omnisend_aio_rate')),C.om),
+    {...ld('ActiveCampaign',rows.map(r=>g(r,'activecampaign_aio_rate')),C.ac),borderDash:[5,3]},
+    {...ld('HubSpot',rows.map(r=>g(r,'hubspot_aio_rate')),C.hs),borderDash:[5,3]},
+    {...ld('Constant Contact',rows.map(r=>g(r,'constantcontact_aio_rate')),C.cc),borderDash:[5,3]},
+  ]},options:bo(40)});
+  const snap=[
+    {n:'Mailchimp',v:g(lat,'mailchimp_aio_rate'),c:C.mc},{n:'Brevo',v:g(lat,'brevo_aio_rate'),c:C.brevo},
+    {n:'MailerLite',v:g(lat,'mailerlite_aio_rate'),c:C.ml},{n:'Klaviyo',v:g(lat,'klaviyo_aio_rate'),c:C.kl},
+    {n:'Omnisend',v:g(lat,'omnisend_aio_rate'),c:C.om},{n:'ActiveCampaign',v:g(lat,'activecampaign_aio_rate'),c:C.ac},
+    {n:'HubSpot',v:g(lat,'hubspot_aio_rate'),c:C.hs},{n:'Constant Contact',v:g(lat,'constantcontact_aio_rate'),c:C.cc},
+  ].sort((a,b)=>b.v-a.v);
+  const so=JSON.parse(JSON.stringify(bo(35)));so.indexAxis='y';so.scales.x={grid:{color:'rgba(255,255,255,0.06)'},ticks:{color:'#64748B',callback:v=>v+'%'}};so.scales.y={grid:{display:false},ticks:{color:'#CBD5E1',font:{size:12}}};
+  dc('c8');CH.c8=new Chart(document.getElementById('c8'),{type:'bar',data:{labels:snap.map(d=>d.n),datasets:[{label:'AIO Citation Rate',data:snap.map(d=>d.v),backgroundColor:snap.map(d=>d.c+'CC'),borderColor:snap.map(d=>d.c),borderWidth:1,borderRadius:6}]},options:so});
+  document.getElementById('chips').innerHTML='<div class="chip"><div class="chl">Mailchimp leads AIO</div><div class="chv" style="color:'+C.mc+'">+'+(g(lat,'mailchimp_aio_rate')-g(lat,'brevo_aio_rate')).toFixed(1)+'pp vs Brevo</div></div><div class="chip"><div class="chl">Top competitor</div><div class="chv" style="color:'+snap[1].c+'">'+snap[1].n+' at '+snap[1].v.toFixed(1)+'%</div></div><div class="chip"><div class="chl">Gap #1 to #8</div><div class="chv" style="color:'+C.mut+'">'+(snap[0].v-snap[snap.length-1].v).toFixed(1)+'pp spread</div></div>';
+  dc('c9');CH.c9=new Chart(document.getElementById('c9'),{type:'line',data:{labels:dates,datasets:[ad('Any Ads Showing',rows.map(r=>g(r,'any_ads_rate')),C.ads),ad('Ads Above AIO',rows.map(r=>g(r,'ads_above_aio_rate')),C.dan)]},options:bo(55)});
+  const av=rows.map(r=>g(r,'ads_above_aio_rate')),anv=rows.map(r=>g(r,'any_ads_rate'));
+  const mx=Math.max(...av);
+  document.getElementById('hbl').innerHTML=rows.map(r=>{const v=g(r,'ads_above_aio_rate');return'<div class="hbr"><span class="hblbl">'+fmt(r.run_date)+'</span><div class="hbt"><div class="hbf" style="width:'+Math.round(v/mx*100)+'%;background:'+C.dan+'"></div></div><span class="hbv" style="color:'+C.dan+'">'+v.toFixed(1)+'%</span></div>';}).join('');
+  const pi=av.indexOf(Math.max(...av)),li=av.indexOf(Math.min(...av.filter(v=>v>0))),pa=anv.indexOf(Math.max(...anv));
+  document.getElementById('serp').innerHTML=[
+    {l:'Peak ads-above-AIO rate',d:fmt(rows[pi].run_date),v:av[pi].toFixed(1)+'%',c:C.dan},
+    {l:'Lowest ads-above-AIO rate',d:fmt(rows[li].run_date),v:av[li].toFixed(1)+'%',c:'#4ADE80'},
+    {l:'Peak any-ads rate',d:fmt(rows[pa].run_date),v:anv[pa].toFixed(1)+'%',c:C.ads},
+    {l:'Latest any-ads rate',d:fmt(rows[rows.length-1].run_date),v:anv[anv.length-1].toFixed(1)+'%',c:'#4ADE80'},
+    {l:'Trend direction',d:'overall',v:av[av.length-1]<av[0]?'↓ Declining':'↑ Increasing',c:'#4ADE80'},
+  ].map(s=>'<div class="sr"><div><div class="srl">'+s.l+'</div><div class="srd">'+s.d+'</div></div><div class="srv" style="color:'+s.c+'">'+s.v+'</div></div>').join('');
+}
+function st(id,el){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('panel-'+id).classList.add('active');el.classList.add('active');if(id==='ngram'&&ngData.length)ngRender();}
+loadData();
+</script>
+</body>
+</html>
