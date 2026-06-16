@@ -24,9 +24,13 @@ The pipeline that populates the sheet has **two stages**:
 1. **A SERP API fetcher** (location TBD as of 2026-06-15 — Dirk-Jan Verdoorn set this up; it might be another Apps Script project, a Make/n8n flow, or somewhere else) writes raw scan results into the **`Results`** tab.
 2. **`flattenAIOData`** (Apps Script in this same sheet, mirrored in [`apps_script/flattenAIOData.gs`](./apps_script/flattenAIOData.gs)) reads `Results` and writes flattened/aggregated data to `looker_data`, `looker_summary` (the summary GID above), and `looker_ngram` (the ngram GID above) — those last two are what the dashboard reads.
 
-`flattenAIOData` runs on a **Wednesday** time-based trigger.
+`flattenAIOData` runs on a **Wednesday** time-based trigger, owned by Jenna Gardner (`jennagardner-dept` / `jenna.gardner@deptagency.com`) as of 2026-06-15. The previous trigger (owned by Brooke) is left in the Triggers list in a "disabled" state because it can only be deleted by its original creator — it has no effect.
 
-> ⚠️ **Known issue (2026-06-15):** the `flattenAIOData` trigger is currently **disabled** because its previous owner's (Brooke's) Google account was deactivated when she left DEPT. The trigger needs to be recreated under an active DEPT account. Separately, the upstream SERP fetcher's location is still being identified.
+> 🔎 **Open question (2026-06-15):** the upstream SERP fetcher that populates the `Results` tab lives somewhere outside this Apps Script project — Dirk-Jan Verdoorn set it up. Location and ownership of that piece need to be confirmed.
+
+## Sharing settings
+
+The Google Sheet must be set to **"Anyone with the link can view"** for the dashboard's gviz fetches to work (the dashboard runs in the user's browser as an anonymous request). If the dashboard ever falls back to its hardcoded cached data (orange "Cached data" badge instead of green "Live"), check the sheet's Share dialog → General access → confirm it's not back to "Restricted."
 
 ## Owners & backup contacts
 
