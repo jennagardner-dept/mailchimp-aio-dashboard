@@ -19,14 +19,14 @@ Built for Intuit (Mailchimp). Maintained by [DEPT](https://www.deptagency.com/).
 - Summary tab (`gid=1479179188`) — one row per scan date with brand-level citation rates
 - N-gram / keyword tab (`gid=1189851907`) — per-keyword performance, used by the Keyword Performance tab
 
-The sheet is populated by a Google Apps Script (Extensions → Apps Script from the sheet) that:
+The pipeline that populates the sheet has **two stages**:
 
-1. Reads the keyword list from the sheet
-2. Calls the SERP API for each keyword
-3. Parses the AIO box, organic results, and paid ads
-4. Writes results back into the sheet
+1. **A SERP API fetcher** (location TBD as of 2026-06-15 — Dirk-Jan Verdoorn set this up; it might be another Apps Script project, a Make/n8n flow, or somewhere else) writes raw scan results into the **`Results`** tab.
+2. **`flattenAIOData`** (Apps Script in this same sheet, mirrored in [`apps_script/flattenAIOData.gs`](./apps_script/flattenAIOData.gs)) reads `Results` and writes flattened/aggregated data to `looker_data`, `looker_summary` (the summary GID above), and `looker_ngram` (the ngram GID above) — those last two are what the dashboard reads.
 
-The script runs on a **Wednesday** time-based trigger.
+`flattenAIOData` runs on a **Wednesday** time-based trigger.
+
+> ⚠️ **Known issue (2026-06-15):** the `flattenAIOData` trigger is currently **disabled** because its previous owner's (Brooke's) Google account was deactivated when she left DEPT. The trigger needs to be recreated under an active DEPT account. Separately, the upstream SERP fetcher's location is still being identified.
 
 ## Owners & backup contacts
 
